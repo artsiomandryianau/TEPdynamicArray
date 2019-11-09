@@ -1,134 +1,179 @@
+#include<iostream>
 #include "CTable.h"
 #include <string>
+//#include <typeinfo>
+
+
+using namespace std;
 
 CTable::CTable()
 {
-	sName = CONST_NAME;
-	piTable = new int[CONST_SIZE];
-	iSize = CONST_SIZE;
-	cout << "Bezp: " << sName << endl;
+	s_name = INITIAL_NAME;
+	size = INITIAL_SIZE;
+	piTable = new int[size];
+	if (DEBUG) cout << "bezp: " << s_name << endl;
 }
 
-CTable::CTable(string s_Name, int iTableLen)
+CTable::CTable(string sName, int iTableLen)
 {
-	this->vSetName(s_Name);
-	this->bSetNewSize(iTableLen);
-	cout << "Parametr: " << sName << endl;
+	s_name = sName;
+	size = iTableLen;
+	piTable = new int[size];
+	if (DEBUG) cout << "parametr: " << s_name << endl;
 }
 
-CTable::CTable(const CTable& pcOther)
+CTable::CTable(CTable &sourceCTable)
 {
-	sName = pcOther.sName + "_copy";
-	iSize = pcOther.iSize;
-	piTable = new int[pcOther.iSize];
-	for (int ii = 0; ii < iSize; ii++)
+	s_name = sourceCTable.getName() + "_copy";
+	size = sourceCTable.getSize();
+	piTable = new int[size];
+	for (int i = 0; i < size; i++)
 	{
-		piTable[ii] = pcOther.piTable[ii];
+		piTable[i] = sourceCTable.getArray()[i];
 	}
-	cout << "Kopuj: " << sName << endl;
+	if (DEBUG) cout << "copy: " << s_name << endl;
 }
 
-void CTable::vSetName(string s_Name)
+CTable::~CTable()
 {
-	sName = s_Name;
+	if (DEBUG) cout << "deleting " << s_name << endl;
+	delete[] piTable;
 }
 
-bool CTable::bSetNewSize(int iTableLen)
-{
 
-	if (!bCheckErrForNewTable(iTableLen))
+string CTable::getName()
+{
+	return s_name;
+}
+
+void CTable::vSetName(string sName)
+{
+	s_name = sName;
+	if (DEBUG) cout << "name changed to: " << sName << endl;
+}
+
+int CTable::getSize()
+{
+	return size;
+}
+
+int* CTable::getArray()
+{
+	return piTable;
+}
+
+bool CTable::bSetNewSize(int newSize)
+{
+	if (newSize < 0)
+	{
+		if (DEBUG) cout << "ERROR: size cannot be less than 0 " << endl;
 		return false;
-
-	int* pi_newTable = new int[iTableLen];
-
-
-	if (iSize < iTableLen)
-	{
-		for (int ii = 0; ii < iSize; ii++)
-		{
-			pi_newTable[ii] = piTable[ii];
-		}
 	}
-	else
+
+	size = newSize;
+	int* pNewArray = new int[size];
+
+	for (int i = 0; i < size; i++)
 	{
-		for (int ii = 0; ii < iTableLen; ii++)
-		{
-			pi_newTable[ii] = piTable[ii];
-		}
+		pNewArray[i] = piTable[i];
 	}
-	delete piTable;
-	iSize = iTableLen;
-	piTable = pi_newTable;
+
+	delete[] piTable;
+	piTable = pNewArray;
+
+	if (DEBUG) cout << "size changed to: " << size << endl;
 	return true;
 }
 
-CTable* CTable::pcClone() {
-	CTable* copy = new CTable(sName, iSize);
-	return copy;
+bool CTable::vSetValueAt(int cellNumber, int value)
+{
+	if (cellNumber < 0)
+	{
+		if (DEBUG) cout << "ERROR: cell size cannot be less than 0 " << endl;
+		return false;
+	}
+	else if (cellNumber >= size)
+	{
+		if (DEBUG) cout << "ERROR: cell num out of range " << endl;
+		return false;
+	}
+
+	piTable[cellNumber] = value; //index bigger or equal than array size exists?
+	if (DEBUG) cout << "cell no " << cellNumber
+		<< " = " << value << endl;
+	return true;
 }
 
-CTable CTable::operator+(CTable& pcNewVal)
+int CTable::vGetValue(int cellNumber)
 {
-	int newSize = pcNewVal.iSize + iSize;
-	int* piTableNew = new int[newSize];
-	for (int ii = 0; ii < iSize; ii++)
+	if (cellNumber < 0)
 	{
-		piTableNew[ii] = piTable[ii];
+		if (DEBUG) cout << "ERROR: cell number can't be less than 0" << endl;
+		return 0;
 	}
-	for (int ii = iSize; ii < newSize; ii++)
+	else if (cellNumber >= size)
 	{
-		piTableNew[ii] = pcNewVal.piTable[ii - iSize];
+		if (DEBUG) cout << "ERROR: cell number out of range!" << endl;
+		return 0;
 	}
-	delete piTable;
-	piTable = piTableNew;
-	iSize = newSize;
-	sPassword = sPassword + pcNewVal.sPassword;
-	return *this;
+	return piTable[cellNumber];
+
 }
 
-CTable CTable::operator*(CTable& pcNewVal)
+CTable* CTable::clone() //+
 {
-	int iCounter = 0;
-	for (int ii = 0; ii < this->iSize; ii++)
+	CTable *pCloneTable;
+	pCloneTable = new CTable();
+	pCloneTable->bSetNewSize(size);
+
+	if (DEBUG) cout << "cloning values to the new object" << endl;
+
+	for (int i = 0; i < size; i++)
 	{
-		for (int iz = 0; iz < pcNewVal.iSize; iz++)
-		{
-			if (piTable[ii] == pcNewVal.piTable[iz])
-			{
-				iCounter++;
-			}
+		pCloneTable->vSetValueAt(i, piTable[i]);
+	}
+
+	if (DEBUG) cout << "returning the " << s_name << " clone " << endl;
+	return pCloneTable;
+}
+//returning a variable declared inside a function
+//will unable to use the variable outside??
+
+void CTable::copyParameters(CTable &sourceArray)
+{
+	int copiedSize = sourceArray.getSize();
+	bSetNewSize(copiedSize);
+
+	int* copiedArray = sourceArray.getArray();
+
+	for (int i = 0; i < size; i++)
+	{
+		piTable[i] = copiedArray[i];//why can't I use the arrow op here?
+	}
+
+	if (DEBUG) cout << "copied succesfully" << endl;
+}
+
+string CTable::vGetInfo()
+{
+	return s_name + " len: " + to_string(size) + " values: " + sGetString();
+}
+
+string CTable::sGetString()
+{
+	string arrValues;
+	int lastComaPos = size - 2;
+
+	for (int i = 0; i < size; i++)
+	{
+		arrValues += to_string(piTable[i]);
+		if (i <= lastComaPos) {
+			arrValues += ", ";
 		}
 	}
-	int* piTableTmp = new int[iCounter];
-	int iFlag = 0;
-	for (int ii = 0; ii < this->iSize; ii++)
-	{
-		for (int iz = 0; iz < pcNewVal.iSize; iz++)
-		{
-			if (piTable[ii] == pcNewVal.piTable[iz])
-			{
-				piTableTmp[iFlag++] = piTable[ii];
-			}
-		}
-	}
-	delete piTable;
-	if (iCounter != 0)
-		piTable = piTableTmp;
-	else
-		piTable = nullptr;
-	iSize = iCounter;
-	return *this;
+	return arrValues;
 }
 
-void CTable::vShowName()
-{
-	cout << "Name: " << sName << endl;
-}
-
-void CTable::vShowSize()
-{
-	cout << "Size: " << iSize << endl;
-}
 
 bool CTable::bCheckErr(int iCheackable)
 {
@@ -146,7 +191,73 @@ bool CTable::bCheckErr(int iCheackable)
 	}
 	return true;
 }
+void CTable::v_mod_tab(CTable* pcTab, int iNewSize)
+{
+	if (!bCheckErrForNewTable(iNewSize))
+		return;
 
+	pcTab->bSetNewSize(iNewSize);
+}
+
+CTable CTable::operator+(CTable& pcNewVal)
+{
+	int newSize = pcNewVal.size + this->size;
+	int *piNewTable = new int[newSize];
+	for (int ii = 0; ii < this->size; ii++)
+	{
+		piNewTable[ii] = this->piTable[ii];
+	}
+	for (int ii = this->size; ii < newSize; ii++)
+	{
+		piNewTable[ii] = pcNewVal.piTable[ii - size];
+	}
+	CTable CTable;
+	CTable.bSetNewSize(newSize);
+	CTable.vSetName(this->s_name + pcNewVal.s_name);
+	delete CTable.piTable;
+	CTable.piTable = piNewTable;
+	return CTable;
+}
+
+CTable CTable::operator +=(CTable &pcNewVal)
+{
+	int newSize = pcNewVal.size + size;
+	int* piTableNew = new int[newSize];
+	for (int ii = 0; ii < size; ii++)
+	{
+		piTableNew[ii] = piTable[ii];
+	}
+	for (int ii = size; ii < newSize; ii++)
+	{
+		piTableNew[ii] = pcNewVal.piTable[ii - size];
+	}
+	delete piTable;
+	piTable = piTableNew;
+	size = newSize;
+	return *this;
+
+}
+CTable CTable::operator+=(int number)
+{
+	int newSize = 1 + size;
+	int* piTableNew = new int[newSize];
+	for (int ii = 0; ii < size; ii++)
+	{
+		piTableNew[ii] = piTable[ii];
+	}
+	piTableNew[size] = number;
+	delete piTable;
+	piTable = piTableNew;
+	size = newSize;
+	return *this;
+}
+
+void CTable::v_mod_tab(CTable cTab, int iNewSize)
+{
+	if (!bCheckErrForNewTable(iNewSize))
+		return;
+	cTab.bSetNewSize(iNewSize);
+}
 bool CTable::bCheckErrForNewTable(int iCheackable)
 {
 	if (!bCheckErr(iCheackable))
@@ -158,98 +269,12 @@ bool CTable::bCheckErrForNewTable(int iCheackable)
 		cout << iCheackable << " is less than previous size" << endl;
 		return false;
 	}*/
-	if (iCheackable == iSize)
+	if (iCheackable == size)
 	{
 		//cout << "Error, new size must be greater than previous size" << endl;
 		cout << "ERROR: " << iCheackable << " is equal to previous size" << endl;
 		return false;
 	}
 	return true;
-}
 
-void CTable::v_mod_tab(CTable* pcTab, int iNewSize)
-{
-	if (!bCheckErrForNewTable(iNewSize))
-		return;
-
-	pcTab->bSetNewSize(iNewSize);
-}
-
-void CTable::v_mod_tab(CTable cTab, int iNewSize)
-{
-	if (!bCheckErrForNewTable(iNewSize))
-		return;
-	cTab.bSetNewSize(iNewSize);
-}
-
-void CTable::vSetValueAt(int iOffset, int iNewVal)
-{
-	if (iOffset >= iSize || iOffset < 0) {
-		cout << "Error, value must be less than table's size" << endl;
-		cout << iOffset << " is greater than table's size (or equal to)" << endl;
-		return;
-	}
-	piTable[iOffset] = iNewVal;
-}
-
-void CTable::vPrint()
-{
-	for (int ii = 0; ii < iSize; ii++)
-	{
-		cout << ii << ": " << piTable[ii] << endl;
-	}
-}
-
-bool CTable::isGoodPassword(string& tmpStr)
-{
-	cout << "Inserted new password: " << tmpStr << endl;
-	int length = tmpStr.length();
-	if (length < 6) {
-		cout << "Error: not enough symbols" << endl;
-		cout << "Need 6 and more, but you have only " << length << " symbols" << endl;
-		return false;
-	}
-	int isUpperCase = 0;
-	int isLowerCase = 0;
-	int errors = 0;
-	for (int i = 0; i < length; i++) {
-		int c = tmpStr[i];
-		if (islower(c))
-			isLowerCase++;
-		else if (isupper(c))
-			isUpperCase++;
-		else
-			errors++;
-	}
-	if (isUpperCase > 0 && isLowerCase > 0 && errors == 0)
-		return true;
-	else
-	{
-		if (isUpperCase == 0)
-			cout << "Error: must be one and more great letters" << endl;
-		if (isLowerCase == 0)
-			cout << "Error: must be one and more small letters" << endl;
-		if (errors > 0)
-			cout << "Error: must be only letters" << endl;
-		return false;
-	}
-
-}
-
-bool CTable::setPassword(string& tmpStr)
-{
-	if (isGoodPassword(tmpStr))
-	{
-		sPassword = tmpStr;
-		return true;
-	}
-	else
-		return false;
-
-}
-
-CTable::~CTable()
-{
-	cout << "Usuwam: " << sName << endl;
-	delete piTable;
 }

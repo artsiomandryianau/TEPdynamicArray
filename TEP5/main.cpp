@@ -12,8 +12,8 @@ int main()
 	if (kirill == 41) {
 
 		CFileLastError cfle("textCFLE.txt");
-		cfle.vPrintLine("asda");
-		cfle.vPrintManyLines({ "Huy", "pizda", "Jigurda" });
+		cfle.vPrintLine("Lom ");
+		cfle.vPrintManyLines({ "Bom ", "Wom ", "Jigurda " });
 
 
 		CFileLastError bezParamCfle;
