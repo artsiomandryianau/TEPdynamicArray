@@ -6,39 +6,25 @@
 
 int main()
 {
-	int kirill = 41;
-	string file = "file.txt";
-	string g;
-	if (kirill == 41) {
+	CFileThrowEx cfte;
+	cfte.vOpenFile("CFTE_Text.txt");
+	cfte.vPrintLine("F");
+	cfte.vCloseFile();
+	cfte.vCloseFile();
 
-		CFileLastError cfle("textCFLE.txt");
-		cfle.vPrintLine("Lom ");
-		cfle.vPrintManyLines({ "Bom ", "Wom ", "Jigurda " });
+	CFileErrCode cfec;
+	cfec.bOpenFile("CFEC_Text.txt");
+	cfec.bPrintLine("F");
+	cfec.bCloseFile();
+	cout << cfec.bCloseFile() << endl;
 
+	CFileLastError cfle;
+	cfle.vOpenFile("CFLE_Text.txt");
+	cfle.vPrintLine("F");
+	cfle.vCloseFile();
+	cfle.vCloseFile();
+	cout << cfle.bGetLastError() << endl;
 
-		CFileLastError bezParamCfle;
-		bezParamCfle.vPrintLine("as");
-		cout << bezParamCfle.bGetLastError() << endl;
-		cfle.vCloseFile();
-		cout << cfle.bGetLastError() << endl;
-
-		CFileErrCode cfec("textCFEC.txt");
-		cfec.bPrintLine("asda");
-		cfec.bPrintManyLines({ "Huy", "pizda", "Jigurda" });
-
-
-		CFileErrCode bezParamCFEC;
-		cout << bezParamCFEC.bPrintLine("ass") << endl;
-		cout << cfec.bCloseFile() << endl;
-
-		CFileThrowEx cftc("textCFTC.txt");
-		cftc.vPrintLine("ASDADDDD");
-
-		CFileThrowEx bezParamCFTC;
-		bezParamCFTC.vPrintLine("saS");
-		cftc.vCloseFile();
-
-	}
 	system("pause");
 	return 0;
 }

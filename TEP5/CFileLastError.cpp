@@ -6,15 +6,21 @@ using namespace std;
 CFileLastError::CFileLastError()
 {
 	b_last_error = false;
-	this->pf_file = NULL;
+	pf_file = NULL;
 }
 
 CFileLastError::CFileLastError(string sFileName)
 {
 	b_last_error = false;
+	pf_file = NULL;
+	if (sFileName.rfind(".") == string::npos)
+	{
+		b_last_error = true;
+		return;
+	}
 	pf_file = fopen(sFileName.c_str(), "w+");
-	if (pf_file != NULL)
-		cout << "asdsa" << endl;
+	if (pf_file == NULL)
+		b_last_error = true;
 }
 
 CFileLastError::~CFileLastError()
@@ -26,12 +32,11 @@ CFileLastError::~CFileLastError()
 void CFileLastError::vOpenFile(string sFileName)
 {
 	b_last_error = false;
-	if (pf_file == NULL)
+	if (sFileName.rfind(".") == string::npos)
 	{
 		b_last_error = true;
 		return;
 	}
-	//delete pf_file;
 	pf_file = fopen(sFileName.c_str(), "w+");
 }
 
@@ -44,6 +49,7 @@ void CFileLastError::vCloseFile()
 		return;
 	}
 	fclose(pf_file);
+	pf_file = NULL;
 }
 
 void CFileLastError::vPrintLine(string sText)

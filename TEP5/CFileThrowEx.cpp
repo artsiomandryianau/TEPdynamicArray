@@ -1,5 +1,11 @@
 #include "CFileThrowEx.h"
+#pragma warning (disable : 4996)
 
+/*
+	Errors list:
+	-1: File is not implemented
+	-2: There is no file's type
+*/
 
 CFileThrowEx::CFileThrowEx()
 {
@@ -19,45 +25,57 @@ CFileThrowEx::~CFileThrowEx()
 
 void CFileThrowEx::vOpenFile(string sFileName)
 {
-	try {
-		delete pf_file;
+	try
+	{
+		if (sFileName.rfind(".") == string::npos)
+		{
+			throw - 2;
+		}
 		pf_file = fopen(sFileName.c_str(), "w+");
+		if (pf_file == NULL)
+			throw - 1;
 	}
-	catch (int e) {
-		cout << "An exception # " << e << '\n'; 
+	catch (int e)
+	{
+		cout << "An exception # " << e << '\n';
 	}
-
 }
 
 void CFileThrowEx::vCloseFile()
 {
-	try {
-		fclose(pf_file);
+	try
+	{
+		if (pf_file == NULL)
+			throw - 1;
+		else {
+			fclose(pf_file);
+			pf_file = NULL;
+		}
 	}
-	catch (int e) {
+	catch (int e)
+	{
 		cout << "An exception # " << e << '\n';
-	}	
+	}
 }
 
 void CFileThrowEx::vPrintLine(string sText)
 {
-	try {
+	try
+	{
+		if (pf_file == NULL)
+			throw - 1;
 		fprintf(pf_file, sText.c_str());
 	}
-	catch (int e) {
+	catch (int e)
+	{
 		cout << "An exception # " << e << '\n';
 	}
+
 }
 
 void CFileThrowEx::vPrintManyLines(vector<string> sText)
 {
-	try {
-		for (string s : sText) {
-			vPrintLine(s);
-		}
-	}
-	catch (int e) {
-		cout << "An exception # " << e << '\n';
-	}
+	for (int i = 0; i < sText.size(); i++)
+		vPrintLine(sText[i]);
 
 }
